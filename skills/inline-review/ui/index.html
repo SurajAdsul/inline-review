@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>diff-review</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <link id="prism-theme-light" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+  <link id="prism-theme-dark" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" disabled>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="h-screen flex flex-col overflow-hidden font-sans" style="background:var(--gh-bg-default);color:var(--gh-fg-default)">
+  <!-- Header -->
+  <header class="flex items-center justify-between px-4 py-2 shrink-0" style="background:var(--gh-header-bg);border-bottom:1px solid var(--gh-border-default)">
+    <div class="flex items-center gap-3">
+      <h1 class="text-sm font-semibold tracking-tight" style="color:var(--gh-fg-default)">diff-review</h1>
+      <span id="diff-type-badge" class="text-xs px-2 py-0.5 rounded-full" style="background:var(--gh-accent-muted);color:var(--gh-fg-muted)"></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="comment-count" class="text-xs" style="color:var(--gh-fg-muted)"></span>
+      <button id="submit-btn" class="text-white transition-colors" style="background:var(--gh-btn-primary-bg);color:var(--gh-btn-primary-fg);border-radius:6px;padding:5px 16px;font-size:14px;font-weight:500">
+        Submit Feedback
+      </button>
+      <div class="h-5" style="width:1px;background:var(--gh-border-default)"></div>
+      <button id="shortcuts-btn" class="px-2 py-1" style="color:var(--gh-fg-muted);border:1px solid var(--gh-border-default);border-radius:6px;font-size:12px" title="Keyboard shortcuts">
+        ?
+      </button>
+      <button id="theme-toggle" class="px-2 py-1" style="color:var(--gh-fg-muted);border:1px solid var(--gh-border-default);border-radius:6px;font-size:12px" title="Toggle theme">
+        <span id="theme-icon-light" class="hidden dark:inline">Light</span>
+        <span id="theme-icon-dark" class="inline dark:hidden">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main area -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 shrink-0 flex flex-col overflow-hidden" style="background:var(--gh-bg-muted);border-right:1px solid var(--gh-border-default)">
+      <div class="flex-1 overflow-y-auto p-2" id="file-tree"></div>
+      <div id="file-summary" class="px-3 py-2 text-xs shrink-0" style="color:var(--gh-fg-muted);border-top:1px solid var(--gh-border-default)"></div>
+    </aside>
+
+    <!-- Diff view -->
+    <main id="diff-view" class="flex-1 overflow-y-auto font-mono" style="font-size:12px;line-height:20px">
+      <div id="diff-empty" class="flex items-center justify-center h-full" style="color:var(--gh-fg-muted)">
+        Loading diff...
+      </div>
+      <div id="diff-content" class="hidden"></div>
+    </main>
+  </div>
+
+  <!-- Keyboard shortcuts overlay -->
+  <div id="shortcuts-overlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="rounded-lg shadow-xl p-6 max-w-sm w-full mx-4" style="background:var(--gh-bg-muted);border:1px solid var(--gh-border-default);color:var(--gh-fg-default)">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold">Keyboard Shortcuts</h2>
+        <button id="shortcuts-close" class="text-lg" style="color:var(--gh-fg-muted)">&times;</button>
+      </div>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Next file</span><kbd class="shortcut-key">j</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Previous file</span><kbd class="shortcut-key">k</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Next hunk</span><kbd class="shortcut-key">n</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Previous hunk</span><kbd class="shortcut-key">p</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Comment on line</span><kbd class="shortcut-key">c</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Close/cancel</span><kbd class="shortcut-key">Esc</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Save comment</span><kbd class="shortcut-key">Ctrl+Enter</kbd></div>
+        <div class="flex justify-between"><span style="color:var(--gh-fg-muted)">Submit feedback</span><kbd class="shortcut-key">Ctrl+Shift+Enter</kbd></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/syntax.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

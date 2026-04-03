@@ -1,0 +1,398 @@
+/* ==========================================================
+   diff-review — GitHub-matched styles
+   Colors extracted from GitHub's Primer design system.
+   ========================================================== */
+
+/* --- CSS Variables (GitHub Primer dark tokens) --- */
+:root {
+  --gh-bg-default: #ffffff;
+  --gh-bg-muted: #f6f8fa;
+  --gh-bg-inset: #eff2f5;
+  --gh-fg-default: #1f2328;
+  --gh-fg-muted: #59636e;
+  --gh-border-default: #d1d9e0;
+  --gh-border-muted: #d1d9e0b3;
+  --gh-header-bg: #f6f8fa;
+
+  --gh-diff-add-line: #dafbe1;
+  --gh-diff-add-num: #adf2bd;
+  --gh-diff-add-num-fg: rgba(36, 41, 47, 0.5);
+  --gh-diff-del-line: #ffebe9;
+  --gh-diff-del-num: #ffc1bc;
+  --gh-diff-del-num-fg: rgba(36, 41, 47, 0.5);
+  --gh-diff-hunk-line: rgba(84, 174, 255, 0.1);
+  --gh-diff-hunk-fg: #59636e;
+  --gh-diff-empty: #f6f8fa;
+
+  --gh-btn-primary-bg: #1f883d;
+  --gh-btn-primary-fg: #ffffff;
+
+  --gh-prefix-add: #1a7f37;
+  --gh-prefix-del: #cf222e;
+
+  --gh-accent-muted: rgba(84, 174, 255, 0.1);
+}
+
+.dark {
+  --gh-bg-default: #0d1117;
+  --gh-bg-muted: #151b23;
+  --gh-bg-inset: #010409;
+  --gh-fg-default: #f0f6fc;
+  --gh-fg-muted: #9198a1;
+  --gh-border-default: #3d444d;
+  --gh-border-muted: #3d444db3;
+  --gh-header-bg: #151b23f2;
+
+  --gh-diff-add-line: rgba(46, 160, 67, 0.15);
+  --gh-diff-add-num: rgba(63, 185, 80, 0.3);
+  --gh-diff-add-num-fg: #f0f6fc;
+  --gh-diff-del-line: rgba(248, 81, 73, 0.1);
+  --gh-diff-del-num: rgba(248, 81, 73, 0.3);
+  --gh-diff-del-num-fg: #f0f6fc;
+  --gh-diff-hunk-line: rgba(56, 139, 253, 0.1);
+  --gh-diff-hunk-fg: #9198a1;
+  --gh-diff-empty: #151b23;
+
+  --gh-btn-primary-bg: #238636;
+  --gh-btn-primary-fg: #ffffff;
+
+  --gh-prefix-add: #3fb950;
+  --gh-prefix-del: #f85149;
+
+  --gh-accent-muted: rgba(56, 139, 253, 0.1);
+}
+
+/* --- Shared diff styles --- */
+
+.diff-line:hover {
+  cursor: pointer;
+}
+
+.diff-line.selected-range {
+  background: var(--gh-accent-muted) !important;
+}
+
+/* --- Unified view --- */
+.diff-table-unified {
+  table-layout: fixed;
+  font-size: 12px;
+  line-height: 20px;
+}
+.diff-table-unified col.uni-col-num {
+  width: 50px;
+}
+
+.diff-table-unified .uni-num {
+  text-align: right;
+  padding: 0 8px 0 0;
+  user-select: none;
+  white-space: nowrap;
+  vertical-align: top;
+  color: var(--gh-fg-muted);
+  font-size: 12px;
+  line-height: 20px;
+  min-width: 50px;
+  cursor: pointer;
+}
+
+.diff-table-unified .uni-code {
+  white-space: pre;
+  overflow-x: auto;
+  padding: 0 10px 0 0;
+  vertical-align: top;
+}
+.diff-table-unified .uni-prefix {
+  display: inline-block;
+  width: 22px;
+  text-align: center;
+  user-select: none;
+}
+
+/* Unified row colors */
+.diff-table-unified tr.uni-add td {
+  background: var(--gh-diff-add-line);
+}
+.diff-table-unified tr.uni-add .uni-num {
+  background: var(--gh-diff-add-num);
+  color: var(--gh-diff-add-num-fg);
+}
+.diff-table-unified tr.uni-del td {
+  background: var(--gh-diff-del-line);
+}
+.diff-table-unified tr.uni-del .uni-num {
+  background: var(--gh-diff-del-num);
+  color: var(--gh-diff-del-num-fg);
+}
+
+/* Unified hover */
+.diff-table-unified .diff-line:hover td {
+  filter: brightness(0.97);
+}
+.dark .diff-table-unified .diff-line:hover td {
+  filter: brightness(1.15);
+}
+
+/* Prefix colors */
+.uni-add .uni-prefix { color: var(--gh-prefix-add); }
+.uni-del .uni-prefix { color: var(--gh-prefix-del); }
+
+/* --- Hunk header --- */
+.hunk-header {
+  background: var(--gh-diff-hunk-line);
+  color: var(--gh-diff-hunk-fg);
+  user-select: none;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* --- File header (sticky) --- */
+.file-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--gh-bg-muted);
+  border-bottom: 1px solid var(--gh-border-default);
+  font-size: 14px;
+}
+
+/* --- Annotation badge --- */
+.annotation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  margin-left: 0.5rem;
+  font-size: 11px;
+  background: var(--gh-accent-muted);
+  color: #388bfd;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+.annotation-badge:hover {
+  filter: brightness(1.2);
+}
+
+/* --- Comment box --- */
+.comment-row {
+  animation: slideDown 0.15s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.comment-row .comment-cell-active {
+  background: var(--gh-accent-muted);
+  border-top: 1px solid var(--gh-border-muted);
+  border-bottom: 1px solid var(--gh-border-muted);
+}
+.comment-row .comment-cell-empty {
+  background: transparent;
+  border-top: 1px solid var(--gh-border-muted);
+  border-bottom: 1px solid var(--gh-border-muted);
+}
+
+/* Comment textarea */
+.comment-textarea {
+  width: 100%;
+  min-height: 4rem;
+  padding: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
+  line-height: 20px;
+  border: 1px solid var(--gh-border-default);
+  border-radius: 6px;
+  background: var(--gh-bg-default);
+  color: var(--gh-fg-default);
+  resize: vertical;
+  outline: none;
+}
+.comment-textarea:focus {
+  border-color: #388bfd;
+  box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3);
+}
+
+/* --- File tree --- */
+.file-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-tree-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.dark .file-tree-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.file-tree-item.active {
+  background: var(--gh-accent-muted);
+  color: #388bfd;
+}
+
+/* Status indicators — GitHub Primer colors */
+.status-modified { color: #d29922; }
+.dark .status-modified { color: #d29922; }
+.status-added { color: #1a7f37; }
+.dark .status-added { color: #3fb950; }
+.status-deleted { color: #cf222e; }
+.dark .status-deleted { color: #f85149; }
+.status-renamed { color: #8250df; }
+.dark .status-renamed { color: #bc8cff; }
+
+/* Change counts in file tree */
+.file-changes {
+  font-size: 11px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.file-changes .add-count { color: #1a7f37; }
+.dark .file-changes .add-count { color: #3fb950; }
+.file-changes .del-count { color: #cf222e; }
+.dark .file-changes .del-count { color: #f85149; }
+
+/* Directory toggle */
+.dir-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+.dir-toggle summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.375rem;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gh-fg-muted);
+  border-radius: 6px;
+}
+.dir-toggle summary:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.dark .dir-toggle summary:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.dir-toggle summary::before {
+  content: '▸';
+  display: inline-block;
+  transition: transform 0.1s;
+  font-size: 10px;
+}
+.dir-toggle[open] summary::before {
+  transform: rotate(90deg);
+}
+
+/* Keyboard shortcut key */
+.shortcut-key {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  background: var(--gh-bg-muted);
+  border: 1px solid var(--gh-border-default);
+  border-radius: 6px;
+  color: var(--gh-fg-default);
+}
+
+/* Code content styling */
+.line-content {
+  white-space: pre;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.line-content code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* Prism overrides */
+.diff-line code[class*="language-"],
+.diff-line pre[class*="language-"] {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-shadow: none !important;
+  font-size: inherit !important;
+}
+
+/* --- Split (side-by-side) view --- */
+.diff-table-split {
+  table-layout: fixed;
+  font-size: 12px;
+  line-height: 20px;
+}
+.diff-table-split col.split-col-num {
+  width: 50px;
+}
+.diff-table-split col.split-col-content {
+  width: calc(50% - 50px);
+}
+
+/* Split line numbers */
+.diff-table-split .split-num {
+  text-align: right;
+  padding: 0 8px;
+  user-select: none;
+  color: var(--gh-fg-muted);
+  white-space: nowrap;
+  vertical-align: top;
+  font-size: 12px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+/* Split code cells */
+.diff-table-split .split-code {
+  white-space: pre;
+  overflow-x: auto;
+  padding: 0 10px 0 4px;
+  vertical-align: top;
+}
+
+/* Divider */
+.diff-table-split .split-left {
+  border-right: 1px solid var(--gh-border-default);
+}
+
+/* Split diff colors */
+.diff-table-split td.split-del {
+  background: var(--gh-diff-del-line);
+}
+.diff-table-split td.split-add {
+  background: var(--gh-diff-add-line);
+}
+
+/* Split line number tints */
+.diff-table-split .split-num.split-del {
+  background: var(--gh-diff-del-num);
+  color: var(--gh-diff-del-num-fg);
+}
+.diff-table-split .split-num.split-add {
+  background: var(--gh-diff-add-num);
+  color: var(--gh-diff-add-num-fg);
+}
+
+/* Empty cells */
+.diff-table-split td.split-empty {
+  background: var(--gh-diff-empty);
+}
+
+/* Split row hover */
+.split-row:hover td:not(.split-empty) {
+  filter: brightness(0.97);
+}
+.dark .split-row:hover td:not(.split-empty) {
+  filter: brightness(1.15);
+}

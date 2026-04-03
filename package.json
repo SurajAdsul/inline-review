@@ -1,0 +1,13 @@
+{
+  "name": "friday-skills",
+  "version": "0.1.0",
+  "description": "Review git diffs in the browser with inline annotations for AI coding agents",
+  "type": "module",
+  "bin": {
+    "inline-review": "./skills/inline-review/scripts/diff-review.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
