@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync, exec } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { createServer } from './server.js';
 
 const args = process.argv.slice(2);
@@ -60,6 +61,41 @@ try {
     console.error('Error: not a git repository or git is not installed');
   }
   process.exit(1);
+}
+
+// Include untracked files in default (head) mode
+if (diffMode === 'head') {
+  try {
+    const untracked = execSync('git ls-files --others --exclude-standard', {
+      encoding: 'utf8',
+      maxBuffer: 10 * 1024 * 1024,
+    }).trim();
+
+    if (untracked) {
+      for (const filePath of untracked.split('\n')) {
+        try {
+          const buf = readFileSync(filePath);
+          // Skip binary files (check for null bytes in first 8KB)
+          const sample = buf.subarray(0, 8192);
+          if (sample.includes(0)) continue;
+
+          const content = buf.toString('utf8');
+          const lines = content.split('\n');
+          // Remove trailing empty line from final newline
+          if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+
+          const lineCount = lines.length;
+          const diffLines = lines.map(l => '+' + l).join('\n');
+
+          rawDiff += `\ndiff --git a/${filePath} b/${filePath}\nnew file mode 100644\n--- /dev/null\n+++ b/${filePath}\n@@ -0,0 +1,${lineCount} @@\n${diffLines}\n`;
+        } catch {
+          // Skip files that can't be read
+        }
+      }
+    }
+  } catch {
+    // Best-effort — silently ignore if git ls-files fails
+  }
 }
 
 if (!rawDiff.trim()) {
