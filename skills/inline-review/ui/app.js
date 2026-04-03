@@ -262,7 +262,6 @@ function renderDiffUnified(fileData) {
       const primaryLine = line.lineNew !== null ? line.lineNew : line.lineOld;
       const lineType = line.type === 'addition' ? 'new' :
                        line.type === 'deletion' ? 'old' : 'context';
-      const badge = getAnnotationBadge(fileData.path, primaryLine, lineType);
 
       html += `<tr class="diff-line ${rowClass}"
         data-file="${SyntaxHighlight.escapeHtml(fileData.path)}"
@@ -273,8 +272,11 @@ function renderDiffUnified(fileData) {
         data-line-index="${li}">
         <td class="uni-num">${lineNumOld}</td>
         <td class="uni-num">${lineNumNew}</td>
-        <td class="uni-code"><span class="uni-prefix">${prefix}</span><code class="language-${lang}">${highlighted}</code>${badge}</td>
+        <td class="uni-code"><span class="uni-prefix">${prefix}</span><code class="language-${lang}">${highlighted}</code></td>
       </tr>`;
+
+      // Insert annotation card rows after this line
+      html += buildAnnotationRowsHTML(fileData.path, primaryLine, lineType, undefined, 3);
     }
   }
 
@@ -385,9 +387,6 @@ function renderDiffSplit(fileData) {
       const leftLineType = left ? (left.type === 'deletion' ? 'old' : 'context') : '';
       const rightLineType = right ? (right.type === 'addition' ? 'new' : 'context') : '';
 
-      const leftBadge = leftNum !== '' ? getAnnotationBadge(fileData.path, leftNum, leftLineType, 'left') : '';
-      const rightBadge = rightNum !== '' ? getAnnotationBadge(fileData.path, rightNum, rightLineType, 'right') : '';
-
       // Primary for row-level data attrs (used by unified-style fallbacks)
       const primaryLineType = rightLineType || leftLineType || 'context';
 
@@ -399,10 +398,18 @@ function renderDiffSplit(fileData) {
         data-hunk-index="${hi}"
         data-line-index="${pi}">
         <td class="split-num ${leftCellClass}" data-side="left">${leftNum}</td>
-        <td class="split-code split-left ${leftCellClass}" data-side="left"><code class="language-${lang}">${leftContent}</code>${leftBadge}</td>
+        <td class="split-code split-left ${leftCellClass}" data-side="left"><code class="language-${lang}">${leftContent}</code></td>
         <td class="split-num ${rightCellClass}" data-side="right">${rightNum}</td>
-        <td class="split-code split-right ${rightCellClass}" data-side="right"><code class="language-${lang}">${rightContent}</code>${rightBadge}</td>
+        <td class="split-code split-right ${rightCellClass}" data-side="right"><code class="language-${lang}">${rightContent}</code></td>
       </tr>`;
+
+      // Insert annotation card rows for left and right sides
+      if (leftNum !== '') {
+        html += buildAnnotationRowsHTML(fileData.path, leftNum, leftLineType, 'left', 4);
+      }
+      if (rightNum !== '') {
+        html += buildAnnotationRowsHTML(fileData.path, rightNum, rightLineType, 'right', 4);
+      }
     }
   }
 
@@ -411,14 +418,68 @@ function renderDiffSplit(fileData) {
   document.getElementById('diff-view').scrollTop = 0;
 }
 
-function getAnnotationBadge(file, line, lineType, side) {
-  const ann = state.annotations.find(
-    a => a.file === file && a.startLine <= line && a.endLine >= line && a.lineType === lineType
+/**
+ * Find all annotations whose endLine matches this line (so the card renders below it).
+ */
+function getAnnotationsEndingAtLine(file, line, lineType, side) {
+  return state.annotations.filter(
+    a => a.file === file && a.endLine === line && a.lineType === lineType
       && (!side || !a.side || a.side === side)
   );
-  if (!ann) return '';
-  const preview = ann.comment.length > 30 ? ann.comment.slice(0, 30) + '...' : ann.comment;
-  return `<span class="annotation-badge" data-annotation-id="${ann.id}" title="${SyntaxHighlight.escapeHtml(ann.comment)}">&#128172; ${SyntaxHighlight.escapeHtml(preview)}</span>`;
+}
+
+/**
+ * Render a GitHub PR-style comment card for an annotation.
+ */
+function renderCommentCard(ann) {
+  const lineRef = ann.startLine === ann.endLine ? `line ${ann.startLine}` : `lines ${ann.startLine}-${ann.endLine}`;
+  const escapedComment = SyntaxHighlight.escapeHtml(ann.comment).replace(/\n/g, '<br>');
+
+  return `<div class="gh-comment-card" data-annotation-id="${ann.id}">
+    <div class="gh-comment-header">
+      <svg class="gh-comment-icon" viewBox="0 0 16 16" width="16" height="16">
+        <path fill="currentColor" d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path>
+      </svg>
+      <span class="gh-comment-ref">${SyntaxHighlight.escapeHtml(ann.file)}:${lineRef}</span>
+      <div class="gh-comment-actions">
+        <button class="gh-comment-action-btn gh-comment-edit" data-annotation-id="${ann.id}" title="Edit comment">
+          <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"></path></svg>
+        </button>
+        <button class="gh-comment-action-btn gh-comment-delete" data-annotation-id="${ann.id}" title="Delete comment">
+          <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div class="gh-comment-body">${escapedComment}</div>
+  </div>`;
+}
+
+/**
+ * Build annotation card row(s) HTML for lines that have annotations ending on them.
+ * Returns HTML string of <tr> elements to insert after a diff line.
+ */
+function buildAnnotationRowsHTML(file, line, lineType, side, colspan) {
+  const anns = getAnnotationsEndingAtLine(file, line, lineType, side);
+  if (anns.length === 0) return '';
+
+  let html = '';
+  for (const ann of anns) {
+    const cardHtml = renderCommentCard(ann);
+    html += `<tr class="annotation-card-row">`;
+    if (state.viewMode === 'split' && side) {
+      if (side === 'left') {
+        html += `<td colspan="2" class="annotation-card-cell">${cardHtml}</td>`;
+        html += `<td colspan="2" class="annotation-card-cell-empty"></td>`;
+      } else {
+        html += `<td colspan="2" class="annotation-card-cell-empty"></td>`;
+        html += `<td colspan="2" class="annotation-card-cell">${cardHtml}</td>`;
+      }
+    } else {
+      html += `<td colspan="${colspan}" class="annotation-card-cell">${cardHtml}</td>`;
+    }
+    html += `</tr>`;
+  }
+  return html;
 }
 
 // --- Annotation System ---
@@ -433,14 +494,25 @@ function initAnnotationEvents() {
 
   // Click on a line to open comment
   diffView.addEventListener('click', (e) => {
-    // Click on badge → edit
-    const badge = e.target.closest('.annotation-badge');
-    if (badge) {
-      const annId = badge.dataset.annotationId;
+    // Click on edit button in comment card → edit
+    const editBtn = e.target.closest('.gh-comment-edit');
+    if (editBtn) {
+      const annId = editBtn.dataset.annotationId;
       const ann = state.annotations.find(a => a.id === annId);
       if (ann) openCommentBox(ann.file, ann.startLine, ann.endLine, ann.lineType, ann, ann.side);
       return;
     }
+
+    // Click on delete button in comment card → delete
+    const deleteBtn = e.target.closest('.gh-comment-delete');
+    if (deleteBtn) {
+      const annId = deleteBtn.dataset.annotationId;
+      deleteAnnotation(annId);
+      return;
+    }
+
+    // Click anywhere on comment card → ignore (don't open new comment)
+    if (e.target.closest('.gh-comment-card')) return;
 
     const row = e.target.closest('tr.diff-line');
     if (!row) return;
@@ -480,7 +552,7 @@ function initAnnotationEvents() {
   // Mouse drag for range selection
   diffView.addEventListener('mousedown', (e) => {
     const row = e.target.closest('tr.diff-line');
-    if (!row || e.target.closest('.annotation-badge') || e.target.closest('.comment-row')) return;
+    if (!row || e.target.closest('.gh-comment-card') || e.target.closest('.comment-row') || e.target.closest('.annotation-card-row')) return;
 
     const clickedTd = e.target.closest('td');
     state.selectionStart = row;
@@ -581,17 +653,29 @@ function openCommentBox(file, startLine, endLine, lineType, existingAnnotation, 
 
   if (!targetRow) return;
 
-  const lineRef = startLine === endLine ? startLine : `${startLine}-${endLine}`;
+  // Hide the existing annotation card row when editing (so we don't show both)
+  if (existingAnnotation) {
+    const cardRow = targetRow.nextElementSibling;
+    if (cardRow && cardRow.classList.contains('annotation-card-row')) {
+      const card = cardRow.querySelector(`[data-annotation-id="${existingAnnotation.id}"]`);
+      if (card) cardRow.style.display = 'none';
+    }
+  }
+
+  const lineRef = startLine === endLine ? `line ${startLine}` : `lines ${startLine}-${endLine}`;
   const formHtml = `
-    <div>
-      <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-        Comment on ${file}:${lineRef}
+    <div class="comment-input-card">
+      <div class="comment-input-header">
+        <svg viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>
+        <span>${existingAnnotation ? 'Edit comment' : 'Add comment'} on ${SyntaxHighlight.escapeHtml(file)}:${lineRef}</span>
       </div>
-      <textarea class="comment-textarea" placeholder="Type your comment..." autofocus>${existingAnnotation ? SyntaxHighlight.escapeHtml(existingAnnotation.comment) : ''}</textarea>
-      <div class="flex gap-2 mt-2">
-        <button class="comment-cancel text-xs px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
-        <button class="comment-save text-xs px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white">Save</button>
-        ${existingAnnotation ? '<button class="comment-delete text-xs px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white">Delete</button>' : ''}
+      <div class="comment-input-body">
+        <textarea class="comment-textarea" placeholder="Leave a comment" autofocus>${existingAnnotation ? SyntaxHighlight.escapeHtml(existingAnnotation.comment) : ''}</textarea>
+      </div>
+      <div class="comment-input-footer">
+        ${existingAnnotation ? '<button class="comment-delete gh-btn-danger">Delete</button>' : ''}
+        <button class="comment-cancel gh-btn-secondary">Cancel</button>
+        <button class="comment-save gh-btn-primary">${existingAnnotation ? 'Update comment' : 'Add comment'}</button>
       </div>
     </div>
   `;
@@ -649,6 +733,11 @@ function openCommentBox(file, startLine, endLine, lineType, existingAnnotation, 
 function closeCommentBox() {
   const existing = document.querySelector('.comment-row');
   if (existing) existing.remove();
+
+  // Restore any hidden annotation card rows
+  document.querySelectorAll('.annotation-card-row[style*="display: none"]').forEach(el => {
+    el.style.display = '';
+  });
 
   // Clear selection highlights
   document.querySelectorAll('.selected-range').forEach(el => el.classList.remove('selected-range'));

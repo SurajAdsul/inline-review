@@ -155,55 +155,127 @@
   font-size: 14px;
 }
 
-/* --- Annotation badge --- */
-.annotation-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0.5rem;
-  margin-left: 0.5rem;
-  font-size: 11px;
-  background: var(--gh-accent-muted);
-  color: #388bfd;
-  border-radius: 9999px;
-  cursor: pointer;
-  white-space: nowrap;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-}
-.annotation-badge:hover {
-  filter: brightness(1.2);
-}
-
-/* --- Comment box --- */
-.comment-row {
+/* --- GitHub PR-style comment card --- */
+.annotation-card-row {
   animation: slideDown 0.15s ease-out;
 }
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.comment-row .comment-cell-active {
-  background: var(--gh-accent-muted);
-  border-top: 1px solid var(--gh-border-muted);
-  border-bottom: 1px solid var(--gh-border-muted);
+.annotation-card-cell {
+  padding: 8px 16px;
+  background: var(--gh-bg-default);
+  border-top: 1px solid var(--gh-border-default);
+  border-bottom: 1px solid var(--gh-border-default);
 }
-.comment-row .comment-cell-empty {
+.annotation-card-cell-empty {
+  background: var(--gh-bg-default);
+  border-top: 1px solid var(--gh-border-default);
+  border-bottom: 1px solid var(--gh-border-default);
+}
+.gh-comment-card {
+  border: 1px solid var(--gh-border-default);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.gh-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--gh-bg-muted);
+  border-bottom: 1px solid var(--gh-border-default);
+  font-size: 12px;
+  color: var(--gh-fg-muted);
+}
+.gh-comment-icon {
+  flex-shrink: 0;
+  color: var(--gh-fg-muted);
+}
+.gh-comment-ref {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gh-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.gh-comment-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
   background: transparent;
-  border-top: 1px solid var(--gh-border-muted);
-  border-bottom: 1px solid var(--gh-border-muted);
+  color: var(--gh-fg-muted);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.gh-comment-action-btn:hover {
+  background: var(--gh-bg-default);
+  color: var(--gh-fg-default);
+}
+.gh-comment-delete:hover {
+  color: #f85149;
+}
+.gh-comment-body {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gh-fg-default);
+  background: var(--gh-bg-default);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
 }
 
-/* Comment textarea */
+/* --- Comment input box --- */
+.comment-row {
+  animation: slideDown 0.15s ease-out;
+}
+.comment-row .comment-cell-active {
+  padding: 8px 16px;
+  background: var(--gh-bg-default);
+  border-top: 1px solid var(--gh-border-default);
+  border-bottom: 1px solid var(--gh-border-default);
+}
+.comment-row .comment-cell-empty {
+  background: var(--gh-bg-default);
+  border-top: 1px solid var(--gh-border-default);
+  border-bottom: 1px solid var(--gh-border-default);
+}
+.comment-input-card {
+  border: 1px solid var(--gh-border-default);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.comment-input-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--gh-bg-muted);
+  border-bottom: 1px solid var(--gh-border-default);
+  font-size: 12px;
+  color: var(--gh-fg-muted);
+}
+.comment-input-body {
+  padding: 16px;
+  background: var(--gh-bg-default);
+}
 .comment-textarea {
   width: 100%;
-  min-height: 4rem;
-  padding: 0.5rem;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-  font-size: 12px;
-  line-height: 20px;
+  min-height: 80px;
+  padding: 8px 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
   border: 1px solid var(--gh-border-default);
   border-radius: 6px;
   background: var(--gh-bg-default);
@@ -214,6 +286,63 @@
 .comment-textarea:focus {
   border-color: #388bfd;
   box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3);
+}
+.comment-input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 16px 12px;
+  background: var(--gh-bg-default);
+}
+
+/* GitHub-style buttons for comment form */
+.gh-btn-primary {
+  padding: 5px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  border: 1px solid rgba(240,246,252,0.1);
+  border-radius: 6px;
+  background: var(--gh-btn-primary-bg);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gh-btn-primary:hover {
+  filter: brightness(1.1);
+}
+.gh-btn-secondary {
+  padding: 5px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  border: 1px solid var(--gh-border-default);
+  border-radius: 6px;
+  background: var(--gh-bg-muted);
+  color: var(--gh-fg-default);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gh-btn-secondary:hover {
+  background: var(--gh-border-muted);
+}
+.gh-btn-danger {
+  padding: 5px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #f85149;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-right: auto;
+}
+.gh-btn-danger:hover {
+  background: rgba(248, 81, 73, 0.1);
+  border-color: #f85149;
 }
 
 /* --- File tree --- */
